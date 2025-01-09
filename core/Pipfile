@@ -7,6 +7,11 @@ name = "pypi"
 django = "*"
 djangorestframework = "*"
 celery = "*"
+psycopg = "*"
+django-celery-results = "*"
+django-celery-beat = "*"
+flower = "*"
+django-redis = "*"
 
 [dev-packages]
 
