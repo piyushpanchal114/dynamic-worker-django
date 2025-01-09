@@ -8,8 +8,7 @@ services:
       python manage.py migrate &&
       python manage.py runserver 0.0.0.0:8000"
     ports:
-      - 8000:8000
-      - 3800:3800
+      - 8080:8000
     hostname: core
     extra_hosts:
       - "host.docker.internal:host-gateway"
@@ -62,7 +61,7 @@ services:
     command: >
       sh -c "celery -A core flower --port=5566"
     ports:
-      - 5566:5566
+      - 5567:5566
     depends_on:
       - djangocore
     volumes:
