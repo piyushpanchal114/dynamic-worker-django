@@ -1,0 +1,75 @@
+services:
+  djangocore:
+    build:
+      context: ./core
+      dockerfile: Dockerfile.dev
+    command: >
+      sh -c "python manage.py makemigrations &&
+      python manage.py migrate &&
+      python manage.py runserver 0.0.0.0:8000"
+    ports:
+      - 8000:8000
+      - 3800:3800
+    hostname: core
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    env_file:
+      - ./.env
+    volumes:
+      - ./core:/usr/src/core
+
+  core-celery-worker:
+    container_name: core-celery-worker
+    build:
+      context: ./core
+      dockerfile: Dockerfile.dev
+    command: >
+      sh -c "python manage.py wait_for_db &&
+      celery --app core worker -l INFO"
+    depends_on:
+      - djangocore
+    volumes:
+      - ./core:/usr/src/core
+    env_file:
+      - ./.env
+    hostname: core-celery-worker
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  core-celery-beat:
+    container_name: core-celery-beat
+    build:
+      context: ./core
+      dockerfile: Dockerfile.dev
+    command: >
+      sh -c "python manage.py wait_for_db &&
+      celery --app core beat -l INFO"
+    depends_on:
+      - djangocore
+    volumes:
+      - ./core:/usr/src/core
+    env_file:
+      - ./.env
+    hostname: core-celery-beat
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  core-celery-flower:
+    container_name: core-celery-flower
+    build:
+      context: ./core
+      dockerfile: Dockerfile.dev
+    command: >
+      sh -c "celery -A core flower --port=5566"
+    ports:
+      - 5566:5566
+    depends_on:
+      - djangocore
+    volumes:
+      - ./core:/usr/src/core
+    env_file:
+      - ./.env
+    hostname: core-celery_flower
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+ 
