@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-fttmk476jz*m(st+jotd7j9ge3!53luja6&zfze6u&b4j#z-vp
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
@@ -80,24 +80,17 @@ WSGI_APPLICATION = 'core.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-if 'RDS_DB_NAME' in os.environ:
-    DATABASES = {
-        'default': {
-            'ENGINE': os.environ['RDS_ENGINE'],
-            'NAME': os.environ['RDS_DB_NAME'],
-            'USER': os.environ['RDS_USERNAME'],
-            'PASSWORD': os.environ['RDS_PASSWORD'],
-            'HOST': os.environ['RDS_HOSTNAME'],
-            'PORT': os.environ['RDS_PORT'],
-        }
+
+DATABASES = {
+    'default': {
+        'ENGINE': os.environ.get('RDS_ENGINE', 'django.db.backends.postgresql'),
+        'NAME': os.environ.get('RDS_DB_NAME', 'core'),
+        'USER': os.environ.get('RDS_USERNAME', 'user'),
+        'PASSWORD': os.environ.get('RDS_PASSWORD', 'password'),
+        'HOST': os.environ.get('RDS_HOSTNAME', 'postgres'),
+        'PORT': os.environ.get('RDS_PORT', '5432'),
     }
-else:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
-    }
+}
 
 
 # Password validation
@@ -142,7 +135,7 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-CELERY_BROKER_URL = os.environ['REDIS_URL']
+CELERY_BROKER_URL = os.environ.get('REDIS_URL', "redis://:@redis:6379/0")
 CELERY_RESULT_BACKEND = 'django-db'
 CELERY_CACHE_BACKEND = 'django-cache'
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
@@ -162,3 +155,6 @@ REST_FRAMEWORK = {
             'rest_framework.renderers.BrowsableAPIRenderer'
         ),
 }
+
+
+REDIS_URL = os.environ.get('REDIS_URL', 'redis://:@redis:6379/0')
