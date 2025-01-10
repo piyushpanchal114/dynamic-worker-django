@@ -12,6 +12,7 @@ django-celery-results = "*"
 django-celery-beat = "*"
 flower = "*"
 django-redis = "*"
+kubernetes = "*"
 
 [dev-packages]
 
