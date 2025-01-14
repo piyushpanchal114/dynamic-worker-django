@@ -50,7 +50,7 @@ class AddTask(APIView):
         q = self.request.query_params.get('q')
         print("q", q)
         user = User.objects.get(username=q)
-        id = add.apply_async((2, 2), queue=f'user_queue_{user.username}')
+        id = add.apply_async((2, 2), queue=f'celery-worker-{user.username}')
         print("id", id)
         return Response({"data": "id"})
 
@@ -63,3 +63,15 @@ class SpinJob(APIView):
         user = User.objects.get(username=q)
         create_worker_job(user.username)
         return Response({"data": "worker job created"})
+
+
+class GetDeployments(APIView):
+
+    def get(self, request):
+        q = self.request.query_params.get('namespace')
+        print("q", q)
+
+        from .helpers import get_deployment_names
+        deployment_names = get_deployment_names()
+        print("deployment_names", deployment_names)
+        return Response({"data": "get deployments"})
