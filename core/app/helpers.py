@@ -25,11 +25,19 @@ def create_worker_for_user(username):
                             image="piyushbugmetrics/dynamic-worker-dj:latest",
                             command=["celery", "-A", "core", "worker",
                                      "-l", "info", "-Q",
-                                     f"user_queue_{username}"])]))))
+                                     f"celery-worker-{username}"])]))))
 
     apps_v1.create_namespaced_deployment(
         namespace="default",
         body=deployment)
+
+
+def delete_worker_for_user(deployment_name):
+    config.load_incluster_config()
+    apps_v1 = client.AppsV1Api()
+
+    apps_v1.delete_namespaced_deployment(
+        name=deployment_name, namespace="default")
 
 
 def create_worker_job(username):
@@ -55,9 +63,25 @@ def create_worker_job(username):
                             image="piyushbugmetrics/dynamic-worker-dj:latest",
                             command=["celery", "-A", "core", "worker",
                                      "-l", "info", "-Q",
-                                     f"user_queue_{username}"])]))))
+                                     f"celery-worker-{username}"])]))))
 
     batch_v1.create_namespaced_job(
         namespace="default",
         body=job
     )
+
+
+def get_deployment_names(namespace="default"):
+    config.load_incluster_config()
+
+    apps_v1 = client.AppsV1Api()
+
+    # Retrieve all deployments in the specified namespace
+    try:
+        deployments = apps_v1.list_namespaced_deployment(namespace)
+        deployment_names = [
+            deployment.metadata.name for deployment in deployments.items]
+        return deployment_names
+    except Exception as e:
+        print(f"Error fetching deployments: {e}")
+        return []
