@@ -25,6 +25,13 @@ spec:
           value: password
         - name: POSTGRES_DB
           value: core # Initialize the 'core' database
+        - name: PGDATA
+          value: /var/lib/postgresql/data/
+        volumeMounts:
+        - name: postgres-data
+          mountPath: /var/lib/postgresql/data/
+      volumes:
+      - name: postgres-data
 ---
 
 # postgres-service
@@ -38,3 +45,55 @@ spec:
   ports:
   - port: 5432
     targetPort: 5432
+
+---
+
+# pgadmin deployment
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pgadmin
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pgadmin
+  template:
+    metadata:
+      labels:
+        app: pgadmin
+    spec:
+      containers:
+      - name: pgadmin
+        image: dpage/pgadmin4:latest
+        ports:
+        - containerPort: 80
+        env:
+        - name: PGADMIN_DEFAULT_EMAIL
+          value: "admin@admin.com"
+        - name: PGADMIN_DEFAULT_PASSWORD
+          value: "password"
+        - name: PGADMIN_LISTEN_PORT
+          value: "80"
+        volumeMounts:
+        - name: pgadmin-data
+          mountPath: /var/lib/pgadmin
+      volumes:
+      - name: pgadmin-data
+
+---
+
+# pgadmin service
+apiVersion: v1
+kind: Service
+metadata:
+  name: pgadmin
+spec:
+  selector:
+    app: pgadmin
+  type: NodePort
+  ports:
+  - port: 80
+    targetPort: 80
+    nodePort: 30086
